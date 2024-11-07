@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: dashy-pre-build
+  IMAGE_NAME: ${{ github.actor }}/dashy-pre-build
 
 jobs:
   push_to_registry:
