@@ -1,15 +1,4 @@
-FROM node:18.19.1-alpine AS BUILD_IMAGE
-
-# Set the platform to build image for
-ARG TARGETPLATFORM
-ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
-
-# Install additional tools needed if on arm64 / armv7
-RUN \
-  case "${TARGETPLATFORM}" in \
-  'linux/arm64') apk add --no-cache python3 make g++ ;; \
-  'linux/arm/v7') apk add --no-cache python3 make g++ ;; \
-  esac
+FROM node:20.11.1-alpine3.19 AS builder
 
 # Create and set the working directory
 WORKDIR /app
@@ -28,21 +17,20 @@ RUN yarn build --mode production --no-clean
 FROM node:20.11.1-alpine3.19
 
 # Define some ENV Vars
-ENV PORT=8080 \
-  DIRECTORY=/app \
-  IS_DOCKER=true
+ENV PORT=8080
+ENV IS_DOCKER=true
 
 # Create and set the working directory
-WORKDIR ${DIRECTORY}
+WORKDIR /app
 
 # Update tzdata for setting timezone
 RUN apk add --no-cache tzdata
 
 # Copy built application from build phase
-COPY --from=BUILD_IMAGE /app ./
+COPY --from=builder /app ./
 
 # Finally, run start command to serve up the built application
-CMD [ "yarn", "build-and-start" ]
+CMD [ "yarn", "start" ]
 
 # Expose the port
 EXPOSE ${PORT}
